@@ -6,7 +6,7 @@ const generateId = () =>
 
 const form = document.querySelector("#workoutForm");
 const reminderList = document.querySelector("#reminderList");
-const summaryCards = document.querySelector("#summaryCards");
+// const summaryCards = document.querySelector("#summaryCards");
 const formFeedback = document.querySelector("#formFeedback");
 const statNumbers = document.querySelector("#statNumbers");
 const tabs = document.querySelectorAll(".tab");
@@ -50,7 +50,7 @@ init();
 //     init();
 //   });
 function init() {
-  renderSummary();
+//   renderSummary();
   renderReminders();
   populateWorkoutFilter();
   initChart();
@@ -101,6 +101,7 @@ function handleSubmit(event) {
   const mediaType = data.get("mediaType");
   const notes = data.get("notes").trim();
   const reminderOffset = Number(data.get("reminderOffset") ?? 0);
+  const completed = data.get("completed") === "on";
   const selectedDate = date ? parseLocalDate(date) : null;
   const pyramidInputs = readPyramidInputs();
 
@@ -152,6 +153,7 @@ function handleSubmit(event) {
     totalVolume,
     sets: totalSets,
     reps: totalReps,
+    completed,
   };
 
   if (editingId) {
@@ -160,7 +162,7 @@ function handleSubmit(event) {
     );
     showFormMessage("Workout updated successfully.");
   } else {
-    workouts = [...workouts, { ...workoutPayload, completed: false }];
+    workouts = [...workouts, workoutPayload];
     showFormMessage("Workout added successfully.");
   }
 
@@ -217,6 +219,9 @@ function populateForm(id) {
   form.elements.date.value = workout.date;
   form.elements.notes.value = workout.notes;
   form.elements.reminderOffset.value = workout.reminderOffset ?? 0;
+  if (form.elements.completed) {
+    form.elements.completed.checked = workout.completed || false;
+  }
   fillPyramidRows(workout);
   const mediaInfo = resolveMedia(workout);
   if (mediaInfo?.mode === "url") {
@@ -269,33 +274,33 @@ function updateMediaPreview() {
   }
 }
 
-function renderSummary() {
-  const totalWorkouts = workouts.length;
-  const completed = workouts.filter((w) => w.completed).length;
-  const upcoming = workouts.filter((w) => isUpcoming(w.date)).length;
-  const totalSets = workouts.reduce((acc, w) => acc + getTotalSets(w), 0);
-  const totalWeight = workouts.reduce((acc, w) => acc + getTotalWeight(w), 0);
-  const totalVolume = workouts.reduce((acc, w) => acc + getTotalVolume(w), 0);
+// function renderSummary() {
+//   const totalWorkouts = workouts.length;
+//   const completed = workouts.filter((w) => w.completed).length;
+//   const upcoming = workouts.filter((w) => isUpcoming(w.date)).length;
+//   const totalSets = workouts.reduce((acc, w) => acc + getTotalSets(w), 0);
+//   const totalWeight = workouts.reduce((acc, w) => acc + getTotalWeight(w), 0);
+//   const totalVolume = workouts.reduce((acc, w) => acc + getTotalVolume(w), 0);
 
-  const cards = [
-    { label: "Total Workouts", value: totalWorkouts },
-    { label: "Upcoming", value: upcoming },
-    { label: "Completed", value: completed },
-    { label: "Sets Logged", value: totalSets },
-    { label: "Weight Lifted", value: formatWeightLabel(totalWeight) },
-    { label: "Volume (kg·reps)", value: formatNumber(totalVolume) },
-  ];
+//   const cards = [
+//     { label: "Total Workouts", value: totalWorkouts },
+//     { label: "Upcoming", value: upcoming },
+//     { label: "Completed", value: completed },
+//     { label: "Sets Logged", value: totalSets },
+//     { label: "Weight Lifted", value: formatWeightLabel(totalWeight) },
+//     { label: "Volume (kg·reps)", value: formatNumber(totalVolume) },
+//   ];
 
-  summaryCards.innerHTML = cards
-    .map(
-      (card) => `
-        <article class="summary-card">
-          <span>${card.label}</span>
-          <strong>${card.value}</strong>
-        </article>`
-    )
-    .join("");
-}
+//   summaryCards.innerHTML = cards
+//     .map(
+//       (card) => `
+//         <article class="summary-card">
+//           <span>${card.label}</span>
+//           <strong>${card.value}</strong>
+//         </article>`
+//     )
+//     .join("");
+// }
 
 function renderReminders() {
   if (!workouts.length) {
@@ -774,7 +779,7 @@ function saveWorkouts() {
 
 function persistAndRender() {
   saveWorkouts();
-  renderSummary();
+//   renderSummary();
   renderReminders();
   populateWorkoutFilter();
   updateStats();
@@ -855,7 +860,6 @@ function parseLocalDate(dateStr) {
 
 function validateForm({ name, selectedDate, mediaUrl, reminderOffset }) {
   const errors = {};
-  const today = startOfDay(new Date());
 
   if (!name) {
     errors.name = "Workout name is required.";
@@ -865,8 +869,6 @@ function validateForm({ name, selectedDate, mediaUrl, reminderOffset }) {
 
   if (!selectedDate) {
     errors.date = "Pick a workout date.";
-  } else if (selectedDate < today) {
-    errors.date = "Scheduled date cannot be in the past.";
   }
 
   if (mediaUrl) {
