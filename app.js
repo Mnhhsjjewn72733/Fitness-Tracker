@@ -15,7 +15,10 @@ const mediaTypeSelect = form.elements.mediaType;
 const mediaFileInput = form.elements.mediaFile;
 const mediaPreview = document.querySelector("#mediaPreview");
 const clearMediaBtn = document.querySelector("#clearMediaBtn");
-const statsCanvas = document.querySelector("#statsChart");
+const setsChartCanvas = document.querySelector("#setsChart");
+const repsChartCanvas = document.querySelector("#repsChart");
+const weightChartCanvas = document.querySelector("#weightChart");
+const volumeChartCanvas = document.querySelector("#volumeChart");
 const workoutFilterSelect = document.querySelector("#workoutFilter");
 const pyramidRows = Array.from(document.querySelectorAll(".pyramid-row"));
 const fieldErrorElements = Array.from(
@@ -39,7 +42,10 @@ const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 let workouts = loadWorkouts();
 let editingId = null;
 let activeRange = "daily";
-let statsChart = null;
+let setsChart = null;
+let repsChart = null;
+let weightChart = null;
+let volumeChart = null;
 let calendarCursor = startOfMonth(new Date());
 let selectedCalendarKey = dateKey(new Date());
 let mediaUploadData = null;
@@ -561,83 +567,144 @@ function shiftCalendarMonth(offset) {
 }
 
 function initChart() {
-  statsChart = new Chart(statsCanvas, {
+  const commonOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: "rgba(17, 20, 26, 0.95)",
+        titleColor: "#f7f9fc",
+        bodyColor: "#f7f9fc",
+        borderColor: "rgba(255,255,255,0.1)",
+        borderWidth: 1,
+        padding: 12,
+      },
+    },
+    scales: {
+      x: {
+        ticks: { color: "#8c96a9", font: { size: 11 } },
+        grid: { color: "rgba(255,255,255,0.05)" },
+      },
+      y: {
+        ticks: { color: "#8c96a9", font: { size: 11 } },
+        grid: { color: "rgba(255,255,255,0.05)" },
+        beginAtZero: true,
+      },
+    },
+  };
+
+  setsChart = new Chart(setsChartCanvas, {
     type: "bar",
     data: {
       labels: [],
       datasets: [
         {
           label: "Sets",
-          backgroundColor: "rgba(93, 224, 163, 0.7)",
+          backgroundColor: "rgba(93, 224, 163, 0.8)",
+          borderColor: "rgba(93, 224, 163, 1)",
+          borderWidth: 1,
           borderRadius: 6,
-          data: [],
-        },
-        {
-          label: "Reps",
-          backgroundColor: "rgba(114, 181, 255, 0.6)",
-          borderRadius: 6,
-          data: [],
-        },
-        {
-          label: "Weight (kg)",
-          type: "line",
-          borderColor: "#f9c74f",
-          backgroundColor: "rgba(249, 199, 79, 0.25)",
-          borderWidth: 2,
-          tension: 0.35,
-          yAxisID: "y1",
-          data: [],
-        },
-        {
-          label: "Volume (kg·reps)",
-          type: "line",
-          borderColor: "#ff8fab",
-          backgroundColor: "rgba(255, 143, 171, 0.25)",
-          borderWidth: 2,
-          tension: 0.35,
-          yAxisID: "y1",
           data: [],
         },
       ],
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          labels: { color: "#f7f9fc" },
+    options: commonOptions,
+  });
+
+  repsChart = new Chart(repsChartCanvas, {
+    type: "bar",
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: "Reps",
+          backgroundColor: "rgba(114, 181, 255, 0.8)",
+          borderColor: "rgba(114, 181, 255, 1)",
+          borderWidth: 1,
+          borderRadius: 6,
+          data: [],
         },
-      },
-      scales: {
-        x: {
-          ticks: { color: "#8c96a9" },
-          grid: { color: "rgba(255,255,255,0.05)" },
-        },
-        y: {
-          ticks: { color: "#8c96a9" },
-          grid: { color: "rgba(255,255,255,0.05)" },
-          beginAtZero: true,
-        },
-        y1: {
-          position: "right",
-          ticks: { color: "#f9c74f" },
-          grid: { drawOnChartArea: false },
-          beginAtZero: true,
-        },
-      },
+      ],
     },
+    options: commonOptions,
+  });
+
+  weightChart = new Chart(weightChartCanvas, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: "Weight (kg)",
+          borderColor: "#f9c74f",
+          backgroundColor: "rgba(249, 199, 79, 0.15)",
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          pointRadius: 4,
+          pointBackgroundColor: "#f9c74f",
+          pointBorderColor: "#fff",
+          pointBorderWidth: 2,
+          data: [],
+        },
+      ],
+    },
+    options: commonOptions,
+  });
+
+  volumeChart = new Chart(volumeChartCanvas, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [
+        {
+          label: "Volume (kg·reps)",
+          borderColor: "#ff8fab",
+          backgroundColor: "rgba(255, 143, 171, 0.15)",
+          borderWidth: 3,
+          tension: 0.4,
+          fill: true,
+          pointRadius: 4,
+          pointBackgroundColor: "#ff8fab",
+          pointBorderColor: "#fff",
+          pointBorderWidth: 2,
+          data: [],
+        },
+      ],
+    },
+    options: commonOptions,
   });
 }
 
 function updateStats() {
   const stats = buildStats(activeRange);
 
-  statsChart.data.labels = stats.labels;
-  statsChart.data.datasets[0].data = stats.setsData;
-  statsChart.data.datasets[1].data = stats.repsData;
-  statsChart.data.datasets[2].data = stats.weightData;
-  statsChart.data.datasets[3].data = stats.volumeData;
-  statsChart.update();
+  if (setsChart) {
+    setsChart.data.labels = stats.labels;
+    setsChart.data.datasets[0].data = stats.setsData;
+    setsChart.update();
+  }
+
+  if (repsChart) {
+    repsChart.data.labels = stats.labels;
+    repsChart.data.datasets[0].data = stats.repsData;
+    repsChart.update();
+  }
+
+  if (weightChart) {
+    weightChart.data.labels = stats.labels;
+    weightChart.data.datasets[0].data = stats.weightData;
+    weightChart.update();
+  }
+
+  if (volumeChart) {
+    volumeChart.data.labels = stats.labels;
+    volumeChart.data.datasets[0].data = stats.volumeData;
+    volumeChart.update();
+  }
 
   statNumbers.innerHTML = `
     <div class="stat-box">
