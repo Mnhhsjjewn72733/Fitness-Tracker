@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personal Gym Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7Pg4s46C1C5l0zG8tkA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <i class="fa-solid fa-dumbbell"></i>
+        <div>
+          <h1>Gym Tracker</h1>
+          <p>Track, remind, and visualize every workout.</p>
+        </div>
+      </div>
+      <div class="summary-cards" id="summaryCards">
+        <!-- Populated by JS -->
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel form-panel">
+        <div class="panel-header">
+          <h2>Add Workout</h2>
+          <p>Log sets, reps, and media for motivation.</p>
+        </div>
+        <form id="workoutForm">
+          <label>
+            Workout Name
+            <input
+              type="text"
+              name="name"
+              placeholder="e.g., Bench Press"
+              required
+            />
+            <small class="field-error" data-error-for="name"></small>
+          </label>
+          <label>
+            Scheduled Date
+            <input type="date" name="date" required />
+            <small class="field-error" data-error-for="date"></small>
+          </label>
+          <div class="pyramid-group">
+            <div class="pyramid-head">
+              <h3>Pyramid Sets</h3>
+              <p>Log up to four progressing sets.</p>
+            </div>
+            <div class="pyramid-rows">
+              <div class="pyramid-row" data-index="0">
+                <span>Set 1</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  placeholder="Sets"
+                  data-field="sets"
+                />
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  placeholder="Reps"
+                  data-field="reps"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="500"
+                  step="0.5"
+                  placeholder="Weight (kg)"
+                  data-field="weight"
+                />
+              </div>
+              <div class="pyramid-row" data-index="1">
+                <span>Set 2</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  placeholder="Sets"
+                  data-field="sets"
+                />
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  placeholder="Reps"
+                  data-field="reps"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="500"
+                  step="0.5"
+                  placeholder="Weight (kg)"
+                  data-field="weight"
+                />
+              </div>
+              <div class="pyramid-row" data-index="2">
+                <span>Set 3</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  placeholder="Sets"
+                  data-field="sets"
+                />
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  placeholder="Reps"
+                  data-field="reps"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="500"
+                  step="0.5"
+                  placeholder="Weight (kg)"
+                  data-field="weight"
+                />
+              </div>
+              <div class="pyramid-row" data-index="3">
+                <span>Set 4</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="20"
+                  placeholder="Sets"
+                  data-field="sets"
+                />
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  placeholder="Reps"
+                  data-field="reps"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  max="500"
+                  step="0.5"
+                  placeholder="Weight (kg)"
+                  data-field="weight"
+                />
+              </div>
+            </div>
+            <small class="field-error" data-error-for="pyramid"></small>
+          </div>
+          <label>
+            Media URL
+            <input
+              type="url"
+              name="mediaUrl"
+              placeholder="https://example.com/workout.jpg"
+            />
+            <small class="field-error" data-error-for="mediaUrl"></small>
+          </label>
+          <label>
+            Media Type
+            <select name="mediaType">
+              <option value="image">Image</option>
+              <option value="video">Video</option>
+            </select>
+          </label>
+          <div class="media-preview" id="mediaPreview">
+            <p>Preview appears here when a media URL is provided.</p>
+          </div>
+          <div class="media-upload-row">
+            <label class="media-upload">
+              Upload Image or Video
+              <input
+                type="file"
+                name="mediaFile"
+                accept="image/*,video/*"
+              />
+              <small class="field-help">
+                Select a file directly from your gallery (max 10 MB).
+              </small>
+            </label>
+            <button type="button" class="ghost-btn ghost-compact" id="clearMediaBtn">
+              Clear Upload
+            </button>
+          </div>
+          <label>
+            Reminder Lead Time
+            <select name="reminderOffset">
+              <option value="0">On workout day</option>
+              <option value="1">1 day before</option>
+              <option value="2">2 days before</option>
+              <option value="3">3 days before</option>
+            </select>
+            <small class="field-error" data-error-for="reminderOffset"></small>
+            <small class="field-help">Controls when the workout reminder appears.</small>
+          </label>
+          <label>
+            Notes
+            <textarea
+              name="notes"
+              rows="3"
+              placeholder="Cues, tempo, goals..."
+            ></textarea>
+          </label>
+          <button type="submit" class="primary-btn">
+            <i class="fa-solid fa-plus"></i>
+            Save Workout
+          </button>
+          <p class="form-feedback" id="formFeedback"></p>
+        </form>
+      </section>
+
+      <section class="panel reminder-panel">
+        <div class="panel-header">
+          <h2>Upcoming & Today's Workouts</h2>
+          <p>Stay ahead with reminders and mark them done.</p>
+        </div>
+        <ul id="reminderList" class="reminder-list">
+          <!-- Populated by JS -->
+        </ul>
+      </section>
+
+      <section class="panel calendar-panel">
+        <div class="panel-header calendar-header">
+          <div>
+            <h2>Calendar</h2>
+            <p>Pick a day to schedule or review workouts.</p>
+          </div>
+          <div class="calendar-controls">
+            <button type="button" class="ghost-btn" id="prevMonthBtn">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div id="calendarMonthLabel"></div>
+            <button type="button" class="ghost-btn" id="nextMonthBtn">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+          <!-- Calendar cells -->
+        </div>
+        <div class="calendar-details">
+          <h3 id="calendarSelectedDate">Select a day</h3>
+          <ul id="calendarWorkoutList">
+            <!-- Populated by JS -->
+          </ul>
+        </div>
+      </section>
+
+      <section class="panel log-panel">
+        <div class="panel-header">
+          <h2>Workout Log</h2>
+          <p>Verify submitted workouts instantly.</p>
+        </div>
+        <div id="workoutLog" class="workout-log">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <section class="panel stats-panel">
+        <div class="panel-header stats-header">
+          <div>
+            <h2>Progress Stats</h2>
+            <p>Compare sets, reps, and total weight/volume.</p>
+          </div>
+          <div class="stats-toolbar">
+            <div class="tab-group">
+              <button class="tab active" data-range="daily">Daily</button>
+              <button class="tab" data-range="weekly">Weekly</button>
+              <button class="tab" data-range="monthly">Monthly</button>
+            </div>
+            <label class="filter-select">
+              <span>Workout</span>
+              <select id="workoutFilter">
+                <option value="all">All workouts</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="stats-content">
+          <div class="stat-numbers" id="statNumbers">
+            <!-- Populated by JS -->
+          </div>
+          <canvas id="statsChart" aria-label="Progress chart"></canvas>
+        </div>
+      </section>
+    </main>
+
+    <template id="reminderItemTemplate">
+      <li class="reminder-item">
+        <div class="reminder-media"></div>
+        <div class="reminder-details">
+          <div class="reminder-top">
+            <h3></h3>
+            <span class="badge"></span>
+          </div>
+          <p class="meta"></p>
+          <p class="notes"></p>
+          <div class="actions">
+            <button class="ghost-btn complete-btn">
+              <i class="fa-solid fa-check"></i>
+              Complete
+            </button>
+            <button class="ghost-btn delete-btn">
+              <i class="fa-solid fa-trash"></i>
+              Delete
+            </button>
+          </div>
+        </div>
+      </li>
+    </template>
+    <script
+      src="https://cdn.jsdelivr.net/npm/chart.js"
+    ></script>
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
+
